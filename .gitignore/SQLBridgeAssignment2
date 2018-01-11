@@ -1,0 +1,95 @@
+#--Haro, Vinicio 
+#--SQL Winter Bridge 2018
+#--Assignment 2 
+
+#--Suppose you are tasked with keeping
+#--track of a database that contain the best “how-to” videos on MySQL.
+
+#--Part 1) Videos table. Create one table to keep track of the videos. This table should include a unique ID, the title of the
+#--video, the length in minutes, and the URL
+
+#--Create the video table in a new schema 
+drop schema if exists youtube; 
+create schema youtube;
+use youtube;
+
+
+drop table if exists videos;
+create table videos (
+  video_id	integer primary key not null,
+  title		varchar(100) not null,
+  url		varchar(150) not null,
+  length_minutes  	numeric
+);
+
+#--Populate the table with at least three related videos from YouTube or other publicly available resources.
+#--Lets create some dummy data to populate the videos table 
+#--The where clause ensures uniqueness in the rows of the dataset 
+insert into videos (video_id, title, url, length_minutes)
+	select 01,'Basic Definite Integrals', 'https://www.youtube.com/watch?v=gjI2QEWUymo',4
+	where not exists ( select * from videos where video_id=01);
+
+insert into videos (video_id, title, url, length_minutes)
+	select 02,'Mod-10 Lecture 12 Compact Sets and its Properties', 'https://www.youtube.com/watch?v=1CYbLCNsTcU&t=128s',56
+	where not exists ( select * from videos where video_id=02);
+
+insert into videos (video_id, title, url, length_minutes)
+	select 03,'Introduction to Basics FEA', 'https://www.youtube.com/watch?v=_xxO_7yrg10',9
+	where not exists ( select * from videos where video_id=03);
+
+
+#--Part 2)
+#--Create and populate Reviewers table. Create a second table that provides at least two user reviews for each of
+#--at least two of the videos. These should be imaginary reviews that include columns for the user’s name
+#--(“Asher”, “Cyd”, etc.), the rating (which could be NULL, or a number between 0 and 5), and a short text review
+#--(“Loved it!”). There should be a column that links back to the ID column in the table of videos.
+
+#--Create the review table 
+#--Introduce a clause that does not allow the video id to be null 
+#--introduce a clause that only allows 0 to 5 video ratings 
+drop table if exists reviews;
+create table reviews (
+reviewer_id	integer primary key not null,
+video_id	integer not null references videos(video_id),
+username	varchar(40) not null,
+rating		numeric check (rating between 0 and 5),
+review		varchar(100)
+);
+
+#populate the reviews table 
+insert into reviews (reviewer_id, video_id, username, rating, review)
+	select 101,01,'JamesMadison',5,'Very informative. Thanks for sharing.'
+	where not exists (select * from reviews where reviewer_id=101);
+
+insert into reviews (reviewer_id, video_id, username, rating, review)
+	select 102,01,'MathIsFun',4,'Great video. Very clear to understand'
+	where not exists (select * from reviews where reviewer_id=102);
+
+insert into reviews (reviewer_id, video_id, username, rating, review)
+	select 103,03,'Jimmy',5,'I passed my exam because of you!'
+	where not exists (select * from reviews where reviewer_id=103);
+
+insert into reviews (reviewer_id, video_id, username, rating, review)
+	select 104,02,'Sally',3,'It was just ok. I wanted to see more examples.'
+	where not exists (select * from reviews where reviewer_id=104);
+
+insert into reviews (reviewer_id, video_id, username, rating, review)
+	select 105,02,'DRose',5,'Very helpful. Awesome!'
+	where not exists (select * from reviews where reviewer_id=105);
+
+insert into reviews (reviewer_id, video_id, username, rating, review)
+	select 106,03,'LukeSkywalker',2,'Not a Star wars video'
+	where not exists (select * from reviews where reviewer_id=106);
+
+#--Part 3)
+#--Report on Video Reviews. Write a JOIN statement that shows information from both tables.
+#--We want a left join in order to show all the info from both tables 
+#---Def: The SQL LEFT JOIN returns all rows from the left table, 
+#--even if there are no matches in the right table. 
+#--This means that if the ON clause matches 0 (zero) records in the right table; 
+#--the join will still return a row in the result, but with NULL in each column from the right table.
+select * 
+from videos a
+left join reviews b
+on a.video_id = b.video_id
+order by a.video_id;
